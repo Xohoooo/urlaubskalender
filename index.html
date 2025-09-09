@@ -6,136 +6,97 @@
   <title>Urlaubskalender / Team-Planer</title>
   <meta name="description" content="Ein einfacher, datenschutzfreundlicher Urlaubskalender für kleine Teams. Läuft komplett im Browser (LocalStorage) und kann über GitHub Pages gehostet werden." />
   <style>
-    :root {
-      --bg: #0b1220;
-      --panel: #121a2b;
-      --muted: #8aa0bf;
-      --text: #e6eefc;
-      --accent: #5cc8ff;
-      --accent-2: #7ee787;
-      --danger: #ff7b72;
-      --warning: #ffdd57;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --radius: 16px;
-    }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
     body {
+      font-family: system-ui, Arial, sans-serif;
       margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      color: var(--text);
-      background: radial-gradient(1200px 600px at 20% -10%, #18223a, transparent),
-                  radial-gradient(1000px 800px at 120% 20%, #172641, transparent),
-                  var(--bg);
-    }
-    .app {
-      max-width: 1200px;
-      margin: 24px auto;
-      padding: 0 16px 48px;
+      background: #f4f6f9;
+      color: #333;
     }
     header {
+      background: #004080;
+      color: #fff;
+      padding: 10px 20px;
       display: flex;
       align-items: center;
-      gap: 16px;
       justify-content: space-between;
-      margin-bottom: 16px;
     }
-    .title {
-      display: flex; align-items: center; gap: 12px;
-    }
-    .title h1 { margin: 0; font-size: 20px; letter-spacing: .2px; }
-    .title .badge { font-size: 12px; color: #0b1220; background: var(--accent-2); padding: 4px 8px; border-radius: 999px; }
-
-    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
-    button, .btn {
-      background: linear-gradient(180deg, #1e2b46, #17233b);
-      border: 1px solid #243355;
-      color: var(--text);
-      padding: 10px 14px;
-      border-radius: 12px;
+    header h1 { font-size: 20px; margin: 0; }
+    .toolbar button {
+      margin-left: 5px;
+      padding: 6px 10px;
+      border: none;
+      border-radius: 6px;
       cursor: pointer;
-      box-shadow: var(--shadow);
     }
-    button:hover { filter: brightness(1.05); }
-    button.secondary { background: #10182a; border-color: #263659; }
-    button.danger { background: #2a1313; border-color: #5a2a2a; color: #ffd6d6; }
-
+    .toolbar .secondary { background: #fff; color: #004080; }
+    .toolbar .danger { background: #c00; color: #fff; }
+    .toolbar button:hover { opacity: 0.8; }
     .grid {
       display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 16px;
+      grid-template-columns: 1fr 3fr;
+      gap: 20px;
+      padding: 20px;
     }
-
-    .card { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: var(--radius); box-shadow: var(--shadow); }
-    .card h3 { margin: 0 0 8px; font-size: 15px; color: var(--muted); font-weight: 600; }
-    .card .content { padding: 16px; }
-
-    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    h2 { margin-top: 0; font-size: 18px; }
+    ul { list-style: none; padding: 0; }
+    li { margin-bottom: 6px; }
+    label { display: block; margin-top: 10px; font-size: 14px; }
     input, select, textarea {
       width: 100%;
-      background: #0d1526;
-      color: var(--text);
-      border: 1px solid #283a61;
-      padding: 10px 12px;
-      border-radius: 10px;
-      outline: none;
+      padding: 6px;
+      margin-top: 3px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
-    input[type="color"] { padding: 2px; height: 40px; }
-
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .members { display: flex; flex-direction: column; gap: 10px; }
-    .member { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px; border: 1px dashed rgba(255,255,255,.12); border-radius: 12px; }
-    .member .left { display: flex; align-items: center; gap: 10px; }
-    .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-
-    /* Calendar */
-    .cal { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: var(--radius); overflow: hidden; }
-    .cal-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
-    .cal-head .nav { display: flex; gap: 8px; align-items: center; }
-    .cal-head h2 { margin: 0; font-size: 18px; }
-    .weekday-row, .day-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
-    .weekday { text-align: center; font-size: 12px; color: var(--muted); padding: 10px 0; background: rgba(255,255,255,.03); border-bottom: 1px solid rgba(255,255,255,.06); }
-    .day {
-      min-height: 110px; border-right: 1px solid rgba(255,255,255,.06); border-bottom: 1px solid rgba(255,255,255,.06);
-      padding: 8px; position: relative; isolation: isolate;
+    button { font-size: 14px; }
+    .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+    .calendar .day {
+      min-height: 80px;
+      background: #fff;
+      border: 1px solid #ddd;
+      padding: 2px;
+      font-size: 12px;
+      position: relative;
     }
-    .day:nth-child(7n) { border-right: none; }
-    .day .num { font-size: 12px; color: var(--muted); }
-    .day.today { background: linear-gradient(180deg, rgba(92,200,255,.1), transparent); }
-    .chips { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
-    .chip { display: flex; align-items: center; gap: 6px; font-size: 11px; padding: 4px 6px; border-radius: 8px; background: rgba(255,255,255,.06); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-    .chip .swatch { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
-    .chip .text { overflow: hidden; text-overflow: ellipsis; }
-
-    /* year view small cells */
-    .year-grid { padding: 14px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    .month-card { background: rgba(255,255,255,.02); border-radius: 12px; padding: 8px; border: 1px solid rgba(255,255,255,.03); }
-    .month-card .mini-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-    .mini-cell { font-size: 10px; min-height: 22px; padding: 3px; border-radius: 6px; display:flex; align-items:center; justify-content:center; }
-
-    .legend { display: flex; gap: 8px; flex-wrap: wrap; }
-    .legend .item { display: flex; gap: 6px; align-items: center; background: rgba(255,255,255,.06); padding: 6px 8px; border-radius: 999px; font-size: 12px; }
-
-    .footer { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; }
-
-    /* Print */
-    @media print {
-      body { background: white; color: black; }
-      .card, .cal { box-shadow: none; }
-      header, .toolbar { position: static; }
-      .grid { grid-template-columns: 1fr; }
-      .members, .member, input, select, button { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .calendar .day .num { font-weight: bold; }
+    .entry {
+      margin: 2px 0;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #fff;
+      cursor: pointer;
     }
-
-    /* Responsive */
-    @media (max-width: 960px) {
-      .grid { grid-template-columns: 1fr; }
-      .year-grid { grid-template-columns: repeat(2, 1fr); }
+    .year-view {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
     }
+    .month-mini {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 5px;
+      background: #fff;
+    }
+    .month-mini h3 {
+      margin: 0;
+      font-size: 14px;
+      text-align: center;
+      background: #eee;
+      border-radius: 4px;
+    }
+    .month-mini .calendar .day { min-height: 20px; font-size: 10px; }
   </style>
 </head>
 <body>
-  <!-- PASSWORTABFRAGE: wird geprüft bevor der Rest angezeigt wird -->
+  <!-- PASSWORT -->
   <script>
     (function(){
       const pass = "2400";
@@ -149,511 +110,243 @@
 
   <div class="app">
     <header>
-      <div class="title">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M7 2v3M17 2v3M3.5 9h17M5 6h14a2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z" stroke="#7ee787" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-        <h1>Urlaubskalender / Team-Planer</h1>
-        <span class="badge">offline & datensparsam</span>
-      </div>
+      <h1>Urlaubskalender / Team-Planer</h1>
       <div class="toolbar">
         <button id="btnToggleView">Jahr/Monat</button>
         <button id="btnToday">Heute</button>
         <button id="btnExport" class="secondary">Export</button>
         <button id="btnImport" class="secondary">Import</button>
-        <button id="btnReset" class="danger" title="Alle Daten löschen">Zurücksetzen</button>
+        <button id="btnICS" class="secondary">iCalendar (.ics)</button>
+        <button id="btnReset" class="danger">Zurücksetzen</button>
         <input type="file" id="fileImport" accept="application/json" style="display:none" />
       </div>
     </header>
 
     <div class="grid">
-      <section class="card">
-        <div class="content">
-          <h3>Team verwalten</h3>
-          <div class="row">
-            <div>
-              <label for="memberName">Name</label>
-              <input id="memberName" placeholder="z. B. Alex" />
-            </div>
-            <div>
-              <label for="memberColor">Farbe</label>
-              <input id="memberColor" type="color" value="#5cc8ff" />
-            </div>
-          </div>
-          <div style="margin-top:8px; display:flex; gap:8px;">
-            <button id="btnAddMember">Mitglied hinzufügen</button>
-          </div>
-          <div class="members" id="memberList" style="margin-top:12px;"></div>
+      <!-- linke Spalte -->
+      <div>
+        <div class="card">
+          <h2>Teammitglieder</h2>
+          <ul id="memberList"></ul>
+          <label>Name <input type="text" id="memberName" /></label>
+          <label>Farbe <input type="color" id="memberColor" value="#007bff" /></label>
+          <button id="addMember">Hinzufügen</button>
         </div>
 
-        <div class="content" style="border-top:1px solid rgba(255,255,255,.08)">
-          <h3>Abwesenheit eintragen</h3>
-          <div class="row">
-            <div>
-              <label for="entryMember">Person</label>
-              <select id="entryMember"></select>
-            </div>
-            <div>
-              <label for="entryType">Typ</label>
-              <select id="entryType">
-                <option value="Urlaub">Urlaub</option>
-                <option value="Krank">Krank</option>
-                <option value="Home Office">Home Office</option>
-                <option value="Fortbildung">Fortbildung</option>
-                <option value="Elternzeit">Elternzeit</option>
-                <option value="Sonstiges">Sonstiges</option>
-              </select>
-            </div>
-          </div>
-          <div class="row" style="margin-top:8px;">
-            <div>
-              <label for="entryStart">Start</label>
-              <input id="entryStart" type="date" />
-            </div>
-            <div>
-              <label for="entryEnd">Ende</label>
-              <input id="entryEnd" type="date" />
-            </div>
-          </div>
-          <div style="margin-top:8px;">
-            <label for="entryNote">Notiz (optional)</label>
-            <input id="entryNote" placeholder="z. B. Resturlaub, halber Tag, …" />
-          </div>
-          <div style="margin-top:8px; display:flex; gap:8px;">
-            <button id="btnAddEntry">Eintragen</button>
-          </div>
+        <div class="card">
+          <h2>Eintrag hinzufügen</h2>
+          <label>Person
+            <select id="entryMember"></select>
+          </label>
+          <label>Start <input type="date" id="entryStart"></label>
+          <label>Ende <input type="date" id="entryEnd"></label>
+          <label>Typ
+            <select id="entryType">
+              <option value="Urlaub">Urlaub</option>
+              <option value="Krank">Krank</option>
+              <option value="Homeoffice">Homeoffice</option>
+            </select>
+          </label>
+          <label>Notiz <textarea id="entryNote"></textarea></label>
+          <button id="addEntry">Einfügen</button>
         </div>
 
-        <div class="content" style="border-top:1px solid rgba(255,255,255,.08)">
-          <h3>Legende</h3>
-          <div class="legend" id="legend"></div>
+        <div class="card">
+          <h2>Gespeicherte Einträge</h2>
+          <ul id="entryList"></ul>
         </div>
-      </section>
+      </div>
 
-      <section class="cal">
-        <div class="cal-head">
-          <div class="nav">
-            <button id="prevMonth">◀</button>
-            <button id="nextMonth">▶</button>
-            <button id="todayBtn" class="secondary">Heute</button>
-          </div>
-          <h2 id="monthLabel"></h2>
-          <div style="width:120px; text-align:right; color:var(--muted); font-size:12px" id="stats"></div>
+      <!-- rechte Spalte -->
+      <div>
+        <div class="card">
+          <h2>Kalender <span id="currentMonthLabel"></span></h2>
+          <div id="calendar"></div>
         </div>
-        <div class="weekday-row">
-          <div class="weekday">Mo</div>
-          <div class="weekday">Di</div>
-          <div class="weekday">Mi</div>
-          <div class="weekday">Do</div>
-          <div class="weekday">Fr</div>
-          <div class="weekday">Sa</div>
-          <div class="weekday">So</div>
-        </div>
-        <div class="day-grid" id="dayGrid"></div>
-        <div class="content footer">
-          <div>Speicherung lokal im Browser (LocalStorage). Export/Import verfügbar.</div>
-          <div><a id="exportLink" download="urlaubskalender-backup.json" class="btn" style="text-decoration:none">Backup herunterladen</a></div>
-        </div>
-      </section>
+      </div>
     </div>
   </div>
 
   <script>
-    // ---------- Datenhaltung ----------
-    const storeKey = 'urlaubskalender.v1';
-    const defaultState = {
-      members: [
-        { id: crypto.randomUUID(), name: 'Alex', color: '#7ee787' },
-        { id: crypto.randomUUID(), name: 'Sam', color: '#5cc8ff' }
-      ],
-      entries: [] // { id, memberId, type, start, end, note }
+    // ---------------- Daten ----------------
+    let state = { members: [], entries: [], currentDate: new Date(), yearView: false };
+
+    function saveState() { localStorage.setItem("urlaubskalender", JSON.stringify(state)); }
+    function loadState() {
+      const d = localStorage.getItem("urlaubskalender");
+      if (d) state = JSON.parse(d);
+    }
+    loadState();
+
+    // ---------------- UI-Render ----------------
+    function renderAll() {
+      renderMembers();
+      renderEntries();
+      renderCalendar();
+    }
+
+    function renderMembers() {
+      const list = document.getElementById("memberList");
+      const select = document.getElementById("entryMember");
+      list.innerHTML = "";
+      select.innerHTML = "";
+      state.members.forEach(m => {
+        const li = document.createElement("li");
+        li.textContent = m.name;
+        li.style.color = m.color;
+        list.appendChild(li);
+
+        const opt = document.createElement("option");
+        opt.value = m.id;
+        opt.textContent = m.name;
+        select.appendChild(opt);
+      });
+    }
+
+    function renderEntries() {
+      const list = document.getElementById("entryList");
+      list.innerHTML = "";
+      state.entries.forEach(e => {
+        const li = document.createElement("li");
+        const member = state.members.find(m => m.id === e.memberId);
+        li.textContent = `${member?.name || "?"}: ${e.start} – ${e.end} (${e.type}) ${e.note||""}`;
+        li.style.color = member?.color || "#000";
+        li.style.cursor = "pointer";
+        li.onclick = () => { if (confirm("Eintrag löschen?")) { state.entries = state.entries.filter(x=>x.id!==e.id); saveState(); renderAll(); } };
+        list.appendChild(li);
+      });
+    }
+
+    function renderCalendar() {
+      const cal = document.getElementById("calendar");
+      cal.innerHTML = "";
+      if (state.yearView) {
+        const year = state.currentDate.getFullYear();
+        const yearDiv = document.createElement("div");
+        yearDiv.className = "year-view";
+        for (let m=0;m<12;m++) {
+          const d = new Date(year, m, 1);
+          const monthDiv = document.createElement("div");
+          monthDiv.className = "month-mini";
+          const h3 = document.createElement("h3");
+          h3.textContent = d.toLocaleString("de-DE",{month:"long"});
+          monthDiv.appendChild(h3);
+          monthDiv.appendChild(buildCalendar(d,true));
+          yearDiv.appendChild(monthDiv);
+        }
+        cal.appendChild(yearDiv);
+        document.getElementById("currentMonthLabel").textContent = year;
+      } else {
+        cal.appendChild(buildCalendar(state.currentDate,false));
+        document.getElementById("currentMonthLabel").textContent = state.currentDate.toLocaleString("de-DE",{month:"long",year:"numeric"});
+      }
+    }
+
+    function buildCalendar(date,mini) {
+      const div = document.createElement("div");
+      div.className="calendar";
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month+1, 0);
+      const startDay = firstDay.getDay()===0?7:firstDay.getDay();
+      for (let i=1;i<startDay;i++){div.appendChild(document.createElement("div"));}
+      for (let d=1;d<=lastDay.getDate();d++) {
+        const dayDiv = document.createElement("div");
+        dayDiv.className="day";
+        const num = document.createElement("div");
+        num.className="num";
+        num.textContent=d;
+        dayDiv.appendChild(num);
+        const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+        state.entries.forEach(e=>{
+          if (e.start<=dateStr && e.end>=dateStr) {
+            const member = state.members.find(m=>m.id===e.memberId);
+            const entryDiv = document.createElement("div");
+            entryDiv.className="entry";
+            entryDiv.textContent=member?.name||"?";
+            entryDiv.style.background=member?.color||"#000";
+            entryDiv.title = `${e.type}\n${e.note||""}`;
+            entryDiv.onclick = () => { if (confirm("Eintrag löschen?")) { state.entries = state.entries.filter(x=>x.id!==e.id); saveState(); renderAll(); } };
+            dayDiv.appendChild(entryDiv);
+          }
+        });
+        div.appendChild(dayDiv);
+      }
+      return div;
+    }
+
+    // ---------------- Aktionen ----------------
+    document.getElementById("addMember").onclick = () => {
+      const name = document.getElementById("memberName").value.trim();
+      if (!name) return;
+      const color = document.getElementById("memberColor").value;
+      state.members.push({id:Date.now()+Math.random(),name,color});
+      saveState(); renderAll();
     };
 
-    function loadState() {
-      try {
-        const raw = localStorage.getItem(storeKey);
-        if (!raw) return JSON.parse(JSON.stringify(defaultState));
-        const parsed = JSON.parse(raw);
-        // Sanity checks
-        parsed.members ??= [];
-        parsed.entries ??= [];
-        return parsed;
-      } catch (e) {
-        console.warn('Konnte State nicht laden, verwende Defaults', e);
-        return JSON.parse(JSON.stringify(defaultState));
-      }
-    }
-    function saveState() {
-      localStorage.setItem(storeKey, JSON.stringify(state));
-      updateExportLink();
-    }
+    document.getElementById("addEntry").onclick = () => {
+      const memberId = parseFloat(document.getElementById("entryMember").value);
+      const start = document.getElementById("entryStart").value;
+      const end = document.getElementById("entryEnd").value;
+      const type = document.getElementById("entryType").value;
+      const note = document.getElementById("entryNote").value;
+      if (!memberId||!start||!end) return;
+      state.entries.push({id:Date.now()+Math.random(),memberId,start,end,type,note});
+      saveState(); renderAll();
+    };
 
-    let state = loadState();
-
-    // ---------- Utils ----------
-    const fmt = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const monthFmt = new Intl.DateTimeFormat('de-DE', { month: 'long', year: 'numeric' });
-
-    function toDate(value) { return new Date(value + 'T00:00:00'); }
-    function addDays(date, days) { const d = new Date(date); d.setDate(d.getDate() + days); return d; }
-    function dateKey(d){ return d.toISOString().slice(0,10); }
-    function clampDate(d){ d.setHours(0,0,0,0); return d; }
-
-    function eachDayInclusive(start, end) {
-      const days = [];
-      let d = clampDate(new Date(start));
-      const e = clampDate(new Date(end));
-      while (d <= e) { days.push(new Date(d)); d.setDate(d.getDate()+1); }
-      return days;
-    }
-
-    function initials(name){
-      return name.split(/\s+/).filter(Boolean).map(p=>p[0]).slice(0,2).join('').toUpperCase();
-    }
-
-    function computeStatsForMonth(year, month){
-      // Summe pro Person für angezeigten Monat
-      const first = new Date(year, month, 1);
-      const last = new Date(year, month + 1, 0);
-      const map = new Map();
-      state.entries.forEach(e => {
-        const s = new Date(e.start); const t = new Date(e.end);
-        const start = s < first ? first : s;
-        const end = t > last ? last : t;
-        if (end < first || start > last) return;
-        const days = eachDayInclusive(start, end).filter(d => d.getDay() !== 0 && d.getDay() !== 6).length; // nur Werktage
-        map.set(e.memberId, (map.get(e.memberId) || 0) + days);
-      });
-      return map; // memberId -> Werktage
-    }
-
-    // ---------- UI Referenzen ----------
-    const memberList = document.getElementById('memberList');
-    const memberName = document.getElementById('memberName');
-    const memberColor = document.getElementById('memberColor');
-    const entryMember = document.getElementById('entryMember');
-    const entryType = document.getElementById('entryType');
-    const entryStart = document.getElementById('entryStart');
-    const entryEnd = document.getElementById('entryEnd');
-    const entryNote = document.getElementById('entryNote');
-    const dayGrid = document.getElementById('dayGrid');
-    const monthLabel = document.getElementById('monthLabel');
-    const legend = document.getElementById('legend');
-    const statsDiv = document.getElementById('stats');
-
-    const btnAddMember = document.getElementById('btnAddMember');
-    const btnAddEntry = document.getElementById('btnAddEntry');
-    const btnExport = document.getElementById('btnExport');
-    const btnImport = document.getElementById('btnImport');
-    const fileImport = document.getElementById('fileImport');
-    const btnReset = document.getElementById('btnReset');
-    const prevMonth = document.getElementById('prevMonth');
-    const nextMonth = document.getElementById('nextMonth');
-    const todayBtn = document.getElementById('todayBtn');
-    const btnToday = document.getElementById('btnToday');
-    const exportLink = document.getElementById('exportLink');
-    const btnToggleView = document.getElementById('btnToggleView');
-
-    // ---------- Aktionen ----------
-    btnAddMember.addEventListener('click', () => {
-      const name = memberName.value.trim();
-      if (!name) return alert('Bitte einen Namen eingeben.');
-      const color = memberColor.value || '#5cc8ff';
-      state.members.push({ id: crypto.randomUUID(), name, color });
-      memberName.value = '';
+    document.getElementById("btnToday").onclick = () => {
+      state.currentDate = new Date();
+      state.yearView=false;
       renderAll();
-      saveState();
-    });
+    };
+    document.getElementById("btnToggleView").onclick = () => {
+      state.yearView=!state.yearView;
+      renderAll();
+    };
+    document.getElementById("btnReset").onclick = () => {
+      if (confirm("Wirklich alles löschen?")) { state={members:[],entries:[],currentDate:new Date(),yearView:false}; saveState(); renderAll(); }
+    };
 
-    function removeMember(id){
-      if (!confirm('Mitglied und zugehörige Einträge wirklich löschen?')) return;
-      state.members = state.members.filter(m => m.id !== id);
-      state.entries = state.entries.filter(e => e.memberId !== id);
-      renderAll(); saveState();
-    }
+    document.getElementById("btnExport").onclick = () => {
+      const blob = new Blob([JSON.stringify(state)],{type:"application/json"});
+      const a = document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="urlaubskalender.json"; a.click();
+    };
+    document.getElementById("btnImport").onclick = () => { document.getElementById("fileImport").click(); };
+    document.getElementById("fileImport").onchange = e => {
+      const f=e.target.files[0]; if (!f) return;
+      const r=new FileReader();
+      r.onload = evt => { state=JSON.parse(evt.target.result); saveState(); renderAll(); };
+      r.readAsText(f);
+    };
 
-    btnAddEntry.addEventListener('click', () => {
-      if (!entryMember.value) return alert('Bitte eine Person auswählen.');
-      if (!entryStart.value || !entryEnd.value) return alert('Bitte Start- und Enddatum angeben.');
-      const s = toDate(entryStart.value); const e = toDate(entryEnd.value);
-      if (e < s) return alert('Ende darf nicht vor dem Start liegen.');
-      state.entries.push({
-        id: crypto.randomUUID(),
-        memberId: entryMember.value,
-        type: entryType.value,
-        start: s.toISOString(),
-        end: e.toISOString(),
-        note: entryNote.value.trim()
+    // ---------- ICS Export ----------
+    function exportICS() {
+      let ics = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Urlaubskalender//DE\n";
+      state.entries.forEach(e => {
+        const uid = e.id + "@urlaubskalender";
+        const dtStart = new Date(e.start).toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+        const dtEndObj = new Date(e.end);
+        dtEndObj.setDate(dtEndObj.getDate() + 1);
+        const dtEnd = dtEndObj.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+        const member = state.members.find(m => m.id === e.memberId);
+        const summary = `${member?.name || "?"} – ${e.type}`;
+        const desc = e.note ? e.note : "";
+        ics += `BEGIN:VEVENT\nUID:${uid}\nDTSTART:${dtStart}\nDTEND:${dtEnd}\nSUMMARY:${summary}\nDESCRIPTION:${desc}\nEND:VEVENT\n`;
       });
-      entryNote.value='';
-      renderAll(); saveState();
-    });
+      ics += "END:VCALENDAR";
 
-    function deleteEntry(id){
-      if (!confirm('Eintrag löschen?')) return;
-      state.entries = state.entries.filter(e => e.id !== id);
-      renderAll(); saveState();
-    }
-
-    btnExport.addEventListener('click', () => {
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const blob = new Blob([ics], { type: "text/calendar" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'urlaubskalender-backup.json'; a.click();
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "urlaubskalender.ics";
+      a.click();
       URL.revokeObjectURL(url);
-    });
-
-    function updateExportLink(){
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      exportLink.href = url;
     }
+    document.getElementById("btnICS").addEventListener("click", exportICS);
 
-    btnImport.addEventListener('click', ()=> fileImport.click());
-    fileImport.addEventListener('change', async (ev) => {
-      const file = ev.target.files?.[0];
-      if (!file) return;
-      try {
-        const txt = await file.text();
-        const data = JSON.parse(txt);
-        if (!data || !Array.isArray(data.members) || !Array.isArray(data.entries)) {
-          alert('Ungültige Datei.'); return;
-        }
-        state = data; saveState(); renderAll();
-      } catch (e) {
-        console.error(e); alert('Import fehlgeschlagen.');
-      } finally { fileImport.value = ''; }
-    });
-
-    btnReset.addEventListener('click', () => {
-      if (!confirm('Wirklich alles löschen?')) return;
-      localStorage.removeItem(storeKey);
-      state = structuredClone(defaultState);
-      renderAll(); saveState();
-    });
-
-    // Kalender Navigation
-    let current = new Date(); current.setDate(1);
-    let viewMode = 'month'; // 'month' or 'year'
-    function setToToday(){ current = new Date(); current.setDate(1); renderCalendar(); }
-    prevMonth.addEventListener('click', () => {
-      if (viewMode === 'month') current.setMonth(current.getMonth()-1);
-      else current.setFullYear(current.getFullYear()-1);
-      renderCalendar();
-    });
-    nextMonth.addEventListener('click', () => {
-      if (viewMode === 'month') current.setMonth(current.getMonth()+1);
-      else current.setFullYear(current.getFullYear()+1);
-      renderCalendar();
-    });
-    todayBtn.addEventListener('click', setToToday);
-    btnToday.addEventListener('click', setToToday);
-    btnToggleView.addEventListener('click', () => {
-      viewMode = (viewMode === 'month') ? 'year' : 'month';
-      // hide or show weekday header depending on view
-      document.querySelector('.weekday-row').style.display = (viewMode === 'month') ? '' : 'none';
-      renderCalendar();
-    });
-
-    // ---------- Rendering ----------
-    function renderMembers(){
-      memberList.innerHTML = '';
-      legend.innerHTML = '';
-      entryMember.innerHTML = '<option value="">– wählen –</option>';
-
-      state.members.forEach(m => {
-        const item = document.createElement('div');
-        item.className = 'member';
-        item.innerHTML = `
-          <div class="left">
-            <span class="dot" style="background:${m.color}"></span>
-            <div>
-              <div style="font-weight:600">${m.name}</div>
-              <div style="font-size:12px;color:var(--muted)">${initials(m.name)}</div>
-            </div>
-          </div>
-          <div style="display:flex; gap:8px; align-items:center;">
-            <button class="secondary" data-edit="${m.id}">Farbe</button>
-            <button class="danger" data-del="${m.id}">Entfernen</button>
-          </div>`;
-        memberList.appendChild(item);
-
-        // Legendeneintrag
-        const leg = document.createElement('div');
-        leg.className = 'item';
-        leg.innerHTML = `<span class="dot" style="background:${m.color}"></span><span>${m.name}</span>`;
-        legend.appendChild(leg);
-
-        // Select
-        const opt = document.createElement('option');
-        opt.value = m.id; opt.textContent = m.name;
-        entryMember.appendChild(opt);
-      });
-
-      // Events (Delegation)
-      memberList.querySelectorAll('[data-del]').forEach(btn => btn.addEventListener('click', e => removeMember(e.target.getAttribute('data-del'))));
-      memberList.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', e => {
-        const id = e.target.getAttribute('data-edit');
-        const m = state.members.find(x => x.id === id);
-        const newColor = prompt(`Neue Farbe für ${m.name} (Hex, z. B. #ff0000)`, m.color);
-        if (!newColor) return;
-        m.color = newColor; saveState(); renderAll();
-      }));
-    }
-
-    function renderCalendar(){
-      if (viewMode === 'month') renderMonthView();
-      else renderYearView();
-      updateExportLink();
-    }
-
-    function renderMonthView(){
-      const year = current.getFullYear();
-      const month = current.getMonth();
-      monthLabel.textContent = monthFmt.format(current);
-
-      const firstOfMonth = new Date(year, month, 1);
-      const startOffset = (firstOfMonth.getDay() + 6) % 7; // Montag=0
-      const daysInMonth = new Date(year, month+1, 0).getDate();
-
-      const totalCells = startOffset + daysInMonth;
-      const rows = Math.ceil(totalCells / 7);
-      dayGrid.innerHTML = '';
-
-      const todayKey = dateKey(new Date());
-
-      for (let r=0; r<rows; r++){
-        for (let c=0; c<7; c++){
-          const cellIndex = r*7 + c;
-          const dayNum = cellIndex - startOffset + 1;
-          const cell = document.createElement('div');
-          cell.className = 'day';
-
-          if (dayNum >= 1 && dayNum <= daysInMonth){
-            const date = new Date(year, month, dayNum);
-            const dKey = dateKey(date);
-            if (dKey === todayKey) cell.classList.add('today');
-            cell.innerHTML = `<div class="num">${dayNum}</div><div class="chips"></div>`;
-            const chips = cell.querySelector('.chips');
-
-            // Einträge an diesem Tag
-            state.entries.forEach(e => {
-              const s = clampDate(new Date(e.start)); const t = clampDate(new Date(e.end));
-              if (date >= s && date <= t){
-                const member = state.members.find(m => m.id === e.memberId);
-                if (!member) return;
-                const chip = document.createElement('div');
-                chip.className = 'chip';
-                chip.title = `${member.name} • ${e.type} • ${fmt.format(new Date(e.start))}–${fmt.format(new Date(e.end))}${e.note ? ' • '+e.note : ''}`;
-                chip.innerHTML = `<span class="swatch" style="background:${member.color}"></span><span class="text">${initials(member.name)} — ${e.type}</span>`;
-                chip.addEventListener('click', () => {
-                  if (confirm('Eintrag öffnen/löschen? OK = löschen, Abbrechen = schließen')){
-                    deleteEntry(e.id);
-                  }
-                });
-                chips.appendChild(chip);
-              }
-            });
-          } else {
-            cell.style.background = 'rgba(255,255,255,.02)';
-          }
-
-          dayGrid.appendChild(cell);
-        }
-      }
-
-      // Stats
-      const map = computeStatsForMonth(year, month);
-      const pairs = Array.from(map.entries()).map(([id, days]) => {
-        const m = state.members.find(x => x.id === id); return { name: m?.name || '—', days };
-      }).sort((a,b)=>b.days-a.days);
-      statsDiv.textContent = pairs.length ? pairs.map(p => `${p.name.split(' ')[0]}: ${p.days} WT`).join(' · ') : '';
-      // show weekday row
-      document.querySelector('.weekday-row').style.display = '';
-    }
-
-    function renderYearView(){
-      const year = current.getFullYear();
-      monthLabel.textContent = year;
-      dayGrid.innerHTML = '';
-
-      // hide weekday row
-      document.querySelector('.weekday-row').style.display = 'none';
-
-      // build custom year grid
-      const container = document.createElement('div');
-      container.className = 'year-grid';
-
-      for (let m=0; m<12; m++){
-        const first = new Date(year, m, 1);
-        const last = new Date(year, m+1, 0);
-        const card = document.createElement('div');
-        card.className = 'month-card';
-        const title = document.createElement('div');
-        title.style.fontSize='13px';
-        title.style.marginBottom='6px';
-        title.style.textAlign='center';
-        title.textContent = first.toLocaleString('de-DE', { month: 'long' });
-        card.appendChild(title);
-
-        const mini = document.createElement('div');
-        mini.className = 'mini-grid';
-        // calculate start offset
-        const startOffset = (first.getDay() + 6) % 7;
-        const days = last.getDate();
-        // add blanks
-        for (let i=0;i<startOffset;i++){
-          const cell = document.createElement('div'); cell.className='mini-cell'; cell.innerHTML=''; mini.appendChild(cell);
-        }
-        for (let d=1; d<=days; d++){
-          const cell = document.createElement('div'); cell.className='mini-cell';
-          const thisDay = new Date(year, m, d);
-          // collect entries for this day
-          let inner = document.createElement('div');
-          inner.style.display='flex';
-          inner.style.gap='2px';
-          inner.style.flexWrap='wrap';
-          state.entries.forEach(e=>{
-            const s = clampDate(new Date(e.start)); const t = clampDate(new Date(e.end));
-            if (thisDay >= s && thisDay <= t){
-              const member = state.members.find(mm => mm.id === e.memberId);
-              if (!member) return;
-              const dot = document.createElement('div');
-              dot.style.width='12px'; dot.style.height='12px'; dot.style.borderRadius='50%';
-              dot.style.background = member.color;
-              dot.title = `${member.name} • ${e.type} • ${fmt.format(new Date(e.start))}–${fmt.format(new Date(e.end))}${e.note ? ' • '+e.note : ''}`;
-              // clicking dot deletes the entry (confirm)
-              dot.style.cursor='pointer';
-              dot.addEventListener('click',(ev)=>{
-                ev.stopPropagation();
-                if (confirm(`Eintrag von ${member.name} am ${fmt.format(thisDay)} löschen?`)){
-                  deleteEntry(e.id);
-                }
-              });
-              inner.appendChild(dot);
-            }
-          });
-          cell.appendChild(inner);
-          mini.appendChild(cell);
-        }
-        card.appendChild(mini);
-        container.appendChild(card);
-      }
-
-      // replace dayGrid content with year grid
-      dayGrid.appendChild(container);
-
-      // stats empty for year view
-      statsDiv.textContent = '';
-    }
-
-    function renderAll(){
-      renderMembers();
-      renderCalendar();
-      updateExportLink();
-    }
-
-    // Init
     renderAll();
   </script>
 </body>
